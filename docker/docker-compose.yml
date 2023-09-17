@@ -1,0 +1,47 @@
+version: '3'
+services:
+  frontend:
+    build: ./front
+    # 연결할 외부 디렉토리 : 컨테이너 내 디렉토리
+    volumes:
+      - ./front:/home/node/app
+    ports:
+      - '5173:5173'
+  database:
+    # Dockerfile이 있는 위치
+    build: ./db
+    # 내부에서 개방할 포트 : 외부에서 접근할 포트
+    ports:
+      - '3333:3306'
+    platform: linux/amd64
+  backend1:
+    build: ./back
+    # 연결할 외부 디렉토리 : 컨테이너 내 디렉토리
+    volumes:
+      - ./back:/usr/src/app
+    ports:
+      - '5002:5002'
+    # 환경변수 설정
+    environment:
+      - DBHOST=localhost
+    depends_on:
+      - database
+  backend2:
+    build: ./register
+    ports:
+      - '3003:3003'
+    environment:
+      - DBHOST=localhost
+    depends_on:
+      - database
+  log:
+    build: ./log
+    ports:
+    - '5003:5003'
+    environment:
+      - DBHOST=localhost
+    depends_on:
+      - database 
+networks:
+  my-host-network:
+    driver: host
